@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from ...function.clientFunctionUtils import FullScreenUI
 from ..registerer.modMain import clientSystems
 from ...config.configUtils import *
 from ...constant.clientConstant import *
@@ -48,20 +48,27 @@ class Main(screenNode):
             PostProcessComp.SetEnableGaussianBlur(True)
             PostProcessComp.SetGaussianBlurRadius(10)
             self.GetBaseUIControl(SETTING_UI).SetVisible(True)
+            FullScreenUI(True)
         else:
             PostProcessComp.SetEnableGaussianBlur(False)
             self.GetBaseUIControl(SETTING_UI).SetVisible(False)
+            FullScreenUI(False)
 
     @AddButtonTouchEvent(SUBMIT_BUTTON)
     def SubmitValue(self, args):
         text = self.GetBaseUIControl(EDIT_BOX).asTextEditBox().GetEditText()
         self.GetBaseUIControl(SETTING_UI).SetVisible(False)
         PostProcessComp.SetEnableGaussianBlur(False)
-
-        if text.strip().isdigit() and '.' in text:
-            SendLocalMessage('设置失败 请输入整数', header=DEFAULT)
+        textNew = text.strip().isdigit()
+        if not textNew or '.' in text:
+            SendLocalMessage('设置失败 请输入正整数')
+            FullScreenUI(False)
+            return
         textNumber = float(text)
-        if not 1.0 < textNumber < 10000.0:
-            SendLocalMessage('设置失败 值需要满足1 < x < 10000 的条件', header=DEFAULT)
-        client.NotifyToServer('SetUpdateTime', {'time': float(text), 'playerId': PLAYER_ID})
-        SendLocalMessage('正在设置..', header=DEFAULT)
+        if textNumber <= 1.0:
+            SendLocalMessage('设置失败 值需要大于1')
+            FullScreenUI(False)
+            return
+        client.NotifyToServer('SetUpdateTime', {'time': textNumber, 'playerId': PLAYER_ID})
+        SendLocalMessage('正在设置..')
+        FullScreenUI(False)

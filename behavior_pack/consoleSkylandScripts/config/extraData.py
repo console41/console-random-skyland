@@ -9,3 +9,5 @@ TIME_REMAINING = 'remaining'
 BLACK_LIST = 'blacklist'
 
 NEXT_BLOCK = 'nextBlock'
+
+CURRENT_BLOCK = 'currentBlock'
