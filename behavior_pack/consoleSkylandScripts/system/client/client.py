@@ -3,7 +3,6 @@
 from ..registerer.modMain import serverSystems
 from ...config.configUtils import *
 from ...constant.clientConstant import *
-from ...pack.packUtils import consoleLibClientApi
 
 __eventList = []
 
