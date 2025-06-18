@@ -1,0 +1,67 @@
+{
+    "args": [
+        {
+            "name": "commandMode",
+            "options": [
+                "blacklist"
+            ],
+            "type": "enum_short"
+        },
+        {
+            "name": "blacklistManage",
+            "options": [
+                "add",
+                "remove",
+                "list"
+            ],
+            "type": "enum_short"
+        },
+        {
+            "default": "$CURRENT",
+            "name": "block",
+            "type": "block"
+        }
+    ],
+    "args1": [
+        {
+            "name": "commandMode",
+            "options": [
+                "next"
+            ],
+            "type": "enum_short"
+        },
+        {
+            "name": "block",
+            "type": "block"
+        }
+    ],
+    "args2": [
+        {
+            "name": "commandMode",
+            "options": [
+                "land"
+            ],
+            "type": "enum_short"
+        },
+        {
+            "name": "landMode",
+            "options": [
+                "bedrock"
+            ],
+            "type": "enum_short"
+        },
+        {
+            "name": "mode",
+            "options": [
+                "set",
+                "destroy"
+            ],
+            "type": "enum_short"
+        }
+    ],
+    "description": "空岛控制器",
+    "format_version": "0.0.1",
+    "name": "skyland_controller",
+    "permission_level": "admin",
+    "requires_cheats": true
+}
