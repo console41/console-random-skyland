@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..constant.serverConstant import *
+from ...constant.serverConstant import *
 
 
 def FillSkylandBlocks(blockId, fromPos1=(11, 121, 1), toPos1=(13, 123, 8), fromPos2=(10, 121, 6), toPos2=(7, 123, 8)):

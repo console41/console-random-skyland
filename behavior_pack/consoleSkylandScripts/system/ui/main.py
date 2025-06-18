@@ -3,7 +3,7 @@
 from ..registerer.modMain import clientSystems
 from ...config.configUtils import *
 from ...constant.clientConstant import *
-from ...pack.packUtils import consoleLibClientApi
+from ...function.clientFunctionUtils import SendLocalMessage
 
 client = clientApi.GetSystem(MOD_NAME, clientSystems[0][1])  # type: clientApi.GetClientSystemCls()
 
@@ -33,7 +33,7 @@ class Main(screenNode):
         self.uiNode = None
 
     def Create(self):
-        self.uiNode = clientApi.GetUI(DIR_ROOT, UI_NAME)
+        self.uiNode = clientApi.GetUI(MOD_NAME, UI_NAME)
         InitButton(self)
 
     def Destroy(self):
@@ -59,9 +59,9 @@ class Main(screenNode):
         PostProcessComp.SetEnableGaussianBlur(False)
 
         if text.strip().isdigit() and '.' in text:
-            consoleLibClientApi.SendLocalMessage('设置失败 请输入整数', header=DEFAULT)
+            SendLocalMessage('设置失败 请输入整数', header=DEFAULT)
         textNumber = float(text)
         if not 1.0 < textNumber < 10000.0:
-            consoleLibClientApi.SendLocalMessage('设置失败 值需要满足1 < x < 10000 的条件', header=DEFAULT)
+            SendLocalMessage('设置失败 值需要满足1 < x < 10000 的条件', header=DEFAULT)
         client.NotifyToServer('SetUpdateTime', {'time': float(text), 'playerId': PLAYER_ID})
-        consoleLibClientApi.SendLocalMessage('正在设置..', header=DEFAULT)
+        SendLocalMessage('正在设置..', header=DEFAULT)

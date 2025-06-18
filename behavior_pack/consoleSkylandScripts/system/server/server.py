@@ -4,8 +4,9 @@ import random
 
 from ..registerer.modMain import clientSystems
 from ...config.configUtils import *
-from ...function.functionUtils import *
-from ...pack.packUtils import consoleLibServerApi
+from ...constant.serverConstant import *
+from ...function.serverFunctionUtils import SendGlobalMessage, FillSkylandBlocks, FillSkylandBottomBlocks, \
+    IsInCommandBlock
 
 __eventList = []
 
@@ -73,7 +74,7 @@ class Main(serverApi.GetServerSystemCls()):
             self.nextBlock = None
             self.currentBlock = block
             FillSkylandBlocks(block)
-            consoleLibServerApi.SendGlobalMessage('方块已刷新', header=DEFAULT)
+            SendGlobalMessage('方块已刷新')
             RunCommand('/playsound random.levelup @a')
 
     @Listen('SetUpdateTime', MOD_NAME, clientSystems[0][1])
@@ -82,11 +83,11 @@ class Main(serverApi.GetServerSystemCls()):
         time = args['time']
         operation = PlayerComp(pid).GetPlayerOperation()
         if operation == 2:
-            consoleLibServerApi.SendGlobalMessage(pid, '设置成功', header=DEFAULT)
+            SendGlobalMessage(pid, '设置成功')
             self.maxTime = time
             self.remainingTime = time
         else:
-            consoleLibServerApi.SendGlobalMessage(pid, '设置失败 需要操作员权限', header=DEFAULT)
+            SendGlobalMessage(pid, '设置失败 需要操作员权限')
 
     @Listen
     def CustomCommandTriggerServerEvent(self, args):

@@ -1,7 +1,5 @@
 import mod.client.extraClientApi as clientApi
 
-from commonConstant import *
-
 PLAYER_ID = clientApi.GetLocalPlayerId()
 LEVEL_ID = clientApi.GetLevelId()
 COMPONENT_FACTORY = clientApi.GetEngineCompFactory()
