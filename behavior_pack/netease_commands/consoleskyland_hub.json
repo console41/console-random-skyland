@@ -1,0 +1,7 @@
+{
+    "description": "返回岛屿",
+    "format_version": "0.0.1",
+    "name": "hub",
+    "permission_level": "any",
+    "requires_cheats": true
+}
