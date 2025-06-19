@@ -10,6 +10,7 @@ from ...function.serverFunctionUtils import SendGlobalMessage, FillSkylandBlocks
 
 __eventList = []
 
+SKYLAND = SKYLAND
 
 def Listen(funcOrStr=None, namespace=serverApi.GetEngineNamespace(), systemName=serverApi.GetEngineSystemName(),
            priority=0):
@@ -42,6 +43,10 @@ class Main(serverApi.GetServerSystemCls()):
             self.nextBlock = None
             # 设置重生点 防止死亡后掉进虚空
             GameComp.SetSpawnDimensionAndPosition(0, SKYLAND)
+            # 将重生半径设为0 防止刷到别的地方去
+            GameComp.SetGameRulesInfoServer(GAME_RULE)
+            # 将所有玩家的位置设置为空岛上
+            PosComp(pid for pid in serverApi.GetPlayerList()).SetFootPos(SKYLAND)
         # 不是第一次进入
         else:
             self.remainingTime = self.extraData[TIME_REMAINING]  # type: float
@@ -49,6 +54,9 @@ class Main(serverApi.GetServerSystemCls()):
             self.nextBlock = self.extraData[NEXT_BLOCK]  # type: str
             self.blacklist = self.extraData[BLACK_LIST]  # type: list
             self.currentBlock = self.extraData[CURRENT_BLOCK]  # type: str
+            # 设置hub的位置
+            global SKYLAND
+            SKYLAND = self.extraData[HUB_POS]
             # 把黑名单里的方块从刷新列表中删除
             for x in self.blacklist:
                 self.allBlocks.remove(x)
@@ -100,10 +108,15 @@ class Main(serverApi.GetServerSystemCls()):
         if command == 'hub':
             if IsInCommandBlock(args):
                 pid = origin['entityId']
-                if DimensionComp(pid).ChangePlayerDimension(0, SKYLAND):
+                if param[0]['value'] == '$BACK':
+                    DimensionComp(pid).ChangePlayerDimension(0, SKYLAND)
                     # 播放音效
                     RunCommand('/playsound mob.shulker.teleport {}'.format(NameComp(pid).GetName()))
                     args['return_msg_key'] = DEFAULT + '成功回到岛屿'
+                else:
+                    global SKYLAND
+                    SKYLAND = param[0]['value']
+                    args['return_msg_key'] = DEFAULT + '已将返回点设为({0:.0f}, {0:.0f}, {0:.0f})'.format(*SKYLAND)
             else:
                 args['return_failed'] = True
                 args['return_msg_key'] = DEFAULT + '该指令在命令方块中禁止使用'
@@ -168,5 +181,5 @@ class Main(serverApi.GetServerSystemCls()):
     def Destroy(self):
         ExtraDataComp(LEVEL_ID).SetExtraData(KEY, {TIME_MAX: self.maxTime, 'remaining': self.remainingTime,
                                                    BLACK_LIST: self.blacklist, NEXT_BLOCK: self.nextBlock,
-                                                   CURRENT_BLOCK: self.currentBlock})
+                                                   CURRENT_BLOCK: self.currentBlock, HUB_POS: SKYLAND})
         GameComp.CancelTimer(self.timer)
