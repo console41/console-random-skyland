@@ -10,7 +10,6 @@ from ...function.serverFunctionUtils import SendGlobalMessage, FillSkylandBlocks
 
 __eventList = []
 
-SKYLAND = SKYLAND
 
 def Listen(funcOrStr=None, namespace=serverApi.GetEngineNamespace(), systemName=serverApi.GetEngineSystemName(),
            priority=0):
@@ -41,12 +40,11 @@ class Main(serverApi.GetServerSystemCls()):
             self.maxTime = 180.0
             self.blacklist = []
             self.nextBlock = None
+            self.hubPos = SKYLAND
             # 设置重生点 防止死亡后掉进虚空
-            GameComp.SetSpawnDimensionAndPosition(0, SKYLAND)
+            GameComp.SetSpawnDimensionAndPosition(0, self.hubPos)
             # 将重生半径设为0 防止刷到别的地方去
             GameComp.SetGameRulesInfoServer(GAME_RULE)
-            # 将所有玩家的位置设置为空岛上
-            PosComp(pid for pid in serverApi.GetPlayerList()).SetFootPos(SKYLAND)
         # 不是第一次进入
         else:
             self.remainingTime = self.extraData[TIME_REMAINING]  # type: float
@@ -55,8 +53,7 @@ class Main(serverApi.GetServerSystemCls()):
             self.blacklist = self.extraData[BLACK_LIST]  # type: list
             self.currentBlock = self.extraData[CURRENT_BLOCK]  # type: str
             # 设置hub的位置
-            global SKYLAND
-            SKYLAND = self.extraData[HUB_POS]
+            self.hubPos = self.extraData[HUB_POS]
             # 把黑名单里的方块从刷新列表中删除
             for x in self.blacklist:
                 self.allBlocks.remove(x)
@@ -77,7 +74,7 @@ class Main(serverApi.GetServerSystemCls()):
             GameComp.PlaceStructure(None, (1.0, 120.0, 1.0), STRUCTURE_NAME, 0)
             self.extraData = -1
             for pid in serverApi.GetPlayerList():
-                PosComp(pid).SetFootPos((9.5, 124.5, 7.5))
+                PosComp(pid).SetFootPos(self.hubPos)
         if self.remainingTime <= 0:
             self.remainingTime = self.maxTime
             block = random.choice(self.allBlocks) if not self.nextBlock else self.nextBlock
@@ -114,8 +111,7 @@ class Main(serverApi.GetServerSystemCls()):
                     RunCommand('/playsound mob.shulker.teleport {}'.format(NameComp(pid).GetName()))
                     args['return_msg_key'] = DEFAULT + '成功回到岛屿'
                 else:
-                    global SKYLAND
-                    SKYLAND = param[0]['value']
+                    self.hubPos = param[0]['value']
                     args['return_msg_key'] = DEFAULT + '已将返回点设为({0:.0f}, {0:.0f}, {0:.0f})'.format(*SKYLAND)
             else:
                 args['return_failed'] = True
@@ -181,5 +177,5 @@ class Main(serverApi.GetServerSystemCls()):
     def Destroy(self):
         ExtraDataComp(LEVEL_ID).SetExtraData(KEY, {TIME_MAX: self.maxTime, 'remaining': self.remainingTime,
                                                    BLACK_LIST: self.blacklist, NEXT_BLOCK: self.nextBlock,
-                                                   CURRENT_BLOCK: self.currentBlock, HUB_POS: SKYLAND})
+                                                   CURRENT_BLOCK: self.currentBlock, HUB_POS: self.hubPos})
         GameComp.CancelTimer(self.timer)
