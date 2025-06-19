@@ -1,4 +1,11 @@
 {
+    "args": [
+        {
+            "default": "$BACK",
+            "name": "pos",
+            "type": "pos"
+        }
+    ],
     "description": "返回岛屿",
     "format_version": "0.0.1",
     "name": "hub",
