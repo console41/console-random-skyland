@@ -11,3 +11,5 @@ BLACK_LIST = 'blacklist'
 NEXT_BLOCK = 'nextBlock'
 
 CURRENT_BLOCK = 'currentBlock'
+
+HUB_POS = 'hubPos'

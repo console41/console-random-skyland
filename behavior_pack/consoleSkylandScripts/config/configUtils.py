@@ -7,3 +7,4 @@ from .extraData import *
 from .structure import *
 from .messageHeader import *
 from .position import *
+from .gameRule import *
