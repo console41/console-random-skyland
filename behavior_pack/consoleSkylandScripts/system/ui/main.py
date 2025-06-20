@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ...function.clientFunctionUtils import FullScreenUI
-from ..registerer.modMain import clientSystems
+from ...modMain import clientSystems
 from ...config.configUtils import *
 from ...constant.clientConstant import *
 from ...function.clientFunctionUtils import SendLocalMessage
