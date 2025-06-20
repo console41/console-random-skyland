@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..registerer.modMain import serverSystems
+from ...modMain import serverSystems
 from ...config.configUtils import *
 from ...constant.clientConstant import *
 

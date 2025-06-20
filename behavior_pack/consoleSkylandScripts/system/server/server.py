@@ -2,7 +2,7 @@
 
 import random
 
-from ..registerer.modMain import clientSystems
+from ...modMain import clientSystems
 from ...config.configUtils import *
 from ...constant.serverConstant import *
 from ...function.serverFunctionUtils import SendGlobalMessage, FillSkylandBlocks, FillSkylandBottomBlocks, \

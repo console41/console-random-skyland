@@ -2,21 +2,21 @@
   "modules": [
     {
       "type": "resources",
-      "uuid": "788dd988-b6a1-4cfc-a361-9b61f5b7a174",
+      "uuid": "8a2d161f-bf24-4fd5-992f-fe8b6e56a6dd",
       "version": [
         0,
         0,
-        2
+        3
       ],
       "description": ""
     }
   ],
   "header": {
-    "uuid": "64adc528-d605-4ea5-a424-82ad1cb5ae20",
+    "uuid": "d1b7e7b3-57c7-4f33-8f0c-abd361cfc1b9",
     "version": [
       0,
       0,
-      8
+      9
     ],
     "description": "",
     "min_engine_version": [
