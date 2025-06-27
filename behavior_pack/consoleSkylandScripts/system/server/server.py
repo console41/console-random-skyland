@@ -2,11 +2,11 @@
 
 import random
 
-from ...modMain import clientSystems
 from ...config.configUtils import *
 from ...constant.serverConstant import *
 from ...function.serverFunctionUtils import SendGlobalMessage, FillSkylandBlocks, FillSkylandBottomBlocks, \
     IsInCommandBlock, SendMessageToPlayer
+from ...modMain import clientSystems
 
 __eventList = []
 
@@ -105,14 +105,15 @@ class Main(serverApi.GetServerSystemCls()):
         if command == 'hub':
             if IsInCommandBlock(args):
                 pid = origin['entityId']
-                if param[0]['value'] == '$BACK':
-                    DimensionComp(pid).ChangePlayerDimension(0, SKYLAND)
+                pos = param[0]['value']
+                if pos == '$BACK':
+                    DimensionComp(pid).ChangePlayerDimension(0, self.hubPos)
                     # 播放音效
                     RunCommand('/playsound mob.shulker.teleport {}'.format(NameComp(pid).GetName()))
                     args['return_msg_key'] = DEFAULT + '成功回到岛屿'
                 else:
-                    self.hubPos = param[0]['value']
-                    args['return_msg_key'] = DEFAULT + '已将返回点设为({0:.0f}, {0:.0f}, {0:.0f})'.format(*SKYLAND)
+                    self.hubPos = pos
+                    args['return_msg_key'] = DEFAULT + '已将返回点设为({0:.0f}, {0:.0f}, {0:.0f})'.format(*pos)
             else:
                 args['return_failed'] = True
                 args['return_msg_key'] = DEFAULT + '该指令在命令方块中禁止使用'
@@ -123,13 +124,17 @@ class Main(serverApi.GetServerSystemCls()):
                     if param[0]['value'] == 'blacklist':
                         block = param[2]['value'] if param[2]['value'] != '$CURRENT' else self.currentBlock
                         if param[1]['value'] == 'add':
-                            if block == '$CURRENT' and self.currentBlock == None:
+                            if block == None:
                                 args['return_failed'] = True
                                 args['return_msg_key'] = DEFAULT + '还没有刷新过方块'
                                 return
                             if block in self.blacklist:
                                 args['return_failed'] = True
                                 args['return_msg_key'] = DEFAULT + '该方块已在黑名单内'
+                                return
+                            if len(self.allBlocks) == 1:
+                                args['return_failed'] = True
+                                args['return_msg_key'] = DEFAULT + '这已经是可刷新方块的最后一个方块了'
                                 return
                             self.blacklist.append(block)
                             self.allBlocks.remove(block)
@@ -138,9 +143,10 @@ class Main(serverApi.GetServerSystemCls()):
                             # 这里修改args会比下面的晚发出
                             # args['return_msg_key'] = DEFAULT + '黑名单列表如下:'
                             args['return_msg_key'] = ''
-                            SendMessageToPlayer(pid, '当前存档的黑名单列表如下')
+                            SendMessageToPlayer(pid, '当前存档的黑名单列表如下:')
                             for b in self.blacklist:
                                 SendMessageToPlayer(pid, b)
+                            SendMessageToPlayer(pid, '====分割线====')
                             SendMessageToPlayer(pid,
                                                 '你所查询的方块{}在黑名单内'.format(
                                                     block) if block in self.blacklist else '你所查询的方块{}不在黑名单里'.format(
@@ -153,6 +159,10 @@ class Main(serverApi.GetServerSystemCls()):
                             self.blacklist.remove(block)
                             self.allBlocks.append(block)
                             args['return_msg_key'] = DEFAULT + '已删除{}'.format(block)
+                        elif param[1]['value'] == 'reset':
+                            self.allBlocks = BlockInfoComp.GetLoadBlocks()
+                            self.blacklist = []
+                            args['return_msg_key'] = DEFAULT + '已重置黑名单为空'
                 elif variant == 1:
                     if param[0]['value'] == 'next':
                         block = param[1]['value']

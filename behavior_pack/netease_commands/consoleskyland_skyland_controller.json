@@ -12,7 +12,8 @@
             "options": [
                 "add",
                 "remove",
-                "list"
+                "list",
+                "reset"
             ],
             "type": "enum_short"
         },
