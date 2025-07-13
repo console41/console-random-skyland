@@ -60,6 +60,35 @@
             "type": "enum_short"
         }
     ],
+    "args3": [
+        {
+            "name": "blacklistManage",
+            "options": [
+                "blacklist_fast_operate"
+            ],
+            "type": "enum_short"
+        },
+        {
+            "name": "mode",
+            "options": [
+                "fast_add",
+                "fast_remove"
+            ],
+            "type": "enum_short"
+        },
+        {
+            "name": "blockType",
+            "options": [
+                "cake",
+                "candle",
+                "stairs",
+                "slab",
+                "door",
+                "flower"
+            ],
+            "type": "enum_short"
+        }
+    ],
     "description": "空岛控制器",
     "format_version": "0.0.1",
     "name": "skyland_controller",

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from ...function.clientFunctionUtils import FullScreenUI
 from ...modMain import clientSystems
 from ...config.configUtils import *
 from ...constant.clientConstant import *
-from ...function.clientFunctionUtils import SendLocalMessage
+from ...pack.clientUtils import consoleLibClientApi
 
 client = clientApi.GetSystem(MOD_NAME, clientSystems[0][1])  # type: clientApi.GetClientSystemCls()
 
@@ -48,11 +47,11 @@ class Main(screenNode):
             PostProcessComp.SetEnableGaussianBlur(True)
             PostProcessComp.SetGaussianBlurRadius(10)
             self.GetBaseUIControl(SETTING_UI).SetVisible(True)
-            FullScreenUI(True)
+            consoleLibClientApi.FullScreenUI(True)
         else:
             PostProcessComp.SetEnableGaussianBlur(False)
             self.GetBaseUIControl(SETTING_UI).SetVisible(False)
-            FullScreenUI(False)
+            consoleLibClientApi.FullScreenUI(False)
 
     @AddButtonTouchEvent(SUBMIT_BUTTON)
     def SubmitValue(self, args):
@@ -61,14 +60,14 @@ class Main(screenNode):
         PostProcessComp.SetEnableGaussianBlur(False)
         textNew = text.strip().isdigit()
         if not textNew or '.' in text:
-            SendLocalMessage('设置失败 请输入正整数')
-            FullScreenUI(False)
+            consoleLibClientApi.SendLocalMessage('设置失败 请输入正整数', DEFAULT)
+            consoleLibClientApi.FullScreenUI(False)
             return
         textNumber = float(text)
         if textNumber <= 1.0:
-            SendLocalMessage('设置失败 值需要大于1')
-            FullScreenUI(False)
+            consoleLibClientApi.SendLocalMessage('设置失败 值需要大于1', DEFAULT)
+            consoleLibClientApi.FullScreenUI(False)
             return
         client.NotifyToServer('SetUpdateTime', {'time': textNumber, 'playerId': PLAYER_ID})
-        SendLocalMessage('正在设置..')
-        FullScreenUI(False)
+        consoleLibClientApi.SendLocalMessage('正在设置..', DEFAULT)
+        consoleLibClientApi.FullScreenUI(False)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import mod.client.extraClientApi as clientApi
 from ...constant.clientConstant import *
 
 def FullScreenUI(isOpen):
