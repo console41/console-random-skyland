@@ -4,9 +4,10 @@ import random
 
 from ...config.configUtils import *
 from ...constant.serverConstant import *
-from ...function.serverFunctionUtils import SendGlobalMessage, FillSkylandBlocks, FillSkylandBottomBlocks, \
-    IsInCommandBlock, SendMessageToPlayer
+from ...function.commonFunctionUtils import *
+from ...function.serverFunctionUtils import FillSkylandBlocks, FillSkylandBottomBlocks
 from ...modMain import clientSystems
+from ...pack.serverUtils import consoleLibServerApi
 
 __eventList = []
 
@@ -60,6 +61,32 @@ class Main(serverApi.GetServerSystemCls()):
 
         self.timer = GameComp.AddRepeatedTimer(1.0, self.RemoveTimer)
 
+    def AddBlockToBlacklist(self, blockId):
+        """
+        将方块添加到黑名单内
+        :param blockId: 方块ID
+        :return: 返回值为1则该方块已经在黑名单内 返回值为2则此方块为可刷新方块的最后一个方块 返回值为0则成功添加
+        """
+        if blockId in self.blacklist:
+            return 1
+        elif len(self.allBlocks) == 1:
+            return 2
+        self.allBlocks.remove(blockId)
+        self.blacklist.append(blockId)
+        return 0
+
+    def RemoveBlockFromBlacklist(self, blockId):
+        """
+        将方块从黑名单内删除
+        :param blockId: 方块ID
+        :return: 返回值为1则该方块不在黑名单内 返回值为0则成功删除
+        """
+        if blockId not in self.blacklist:
+            return 1
+        self.allBlocks.append(blockId)
+        self.blacklist.remove(blockId)
+        return 0
+
     def RemoveTimer(self):
         '''
         计时器事件 时间减少时
@@ -81,7 +108,7 @@ class Main(serverApi.GetServerSystemCls()):
             self.nextBlock = None
             self.currentBlock = block
             FillSkylandBlocks(block)
-            SendGlobalMessage('方块已刷新')
+            consoleLibServerApi.SendGlobalMessage('方块已刷新', DEFAULT)
             RunCommand('/playsound random.levelup @a')
 
     @Listen('SetUpdateTime', MOD_NAME, clientSystems[0][1])
@@ -90,11 +117,24 @@ class Main(serverApi.GetServerSystemCls()):
         time = args['time']
         operation = PlayerComp(pid).GetPlayerOperation()
         if operation == 2:
-            SendMessageToPlayer(pid, '设置成功')
+            consoleLibServerApi.SendMessageToPlayer(pid, '设置成功', DEFAULT)
             self.maxTime = time
             self.remainingTime = time
         else:
-            SendMessageToPlayer(pid, '设置失败 需要操作员权限')
+            consoleLibServerApi.SendMessageToPlayer(pid, '设置失败 需要操作员权限', DEFAULT)
+
+    @Listen
+    def ChunkLoadedServerEvent(self, args):
+        # 给加载的区块设置生物群系 防止无法刷新动物
+        dimension = args['dimension']
+        chunkPosX = args['chunkPosX']
+        chunkPosZ = args['chunkPosZ']
+        if dimension == 0:
+            minX = chunkPosX * 16
+            maxX = chunkPosX * 16 + 15
+            minZ = chunkPosZ * 16
+            maxZ = chunkPosZ * 16 + 15
+            BiomeComp.SetBiomeByVolume((minX, -512, minZ), (maxX, 512, maxZ), 'plains', dimension)
 
     @Listen
     def CustomCommandTriggerServerEvent(self, args):
@@ -103,7 +143,7 @@ class Main(serverApi.GetServerSystemCls()):
         variant = args['variant']
         param = args['args']
         if command == 'hub':
-            if IsInCommandBlock(args):
+            if consoleLibServerApi.IsRunByPlayer(args):
                 pid = origin['entityId']
                 pos = param[0]['value']
                 if pos == '$BACK':
@@ -118,71 +158,136 @@ class Main(serverApi.GetServerSystemCls()):
                 args['return_failed'] = True
                 args['return_msg_key'] = DEFAULT + '该指令在命令方块中禁止使用'
         elif command == 'skyland_controller':
-            if IsInCommandBlock(args):
-                pid = origin['entityId']
-                if variant == 0:
-                    if param[0]['value'] == 'blacklist':
-                        block = param[2]['value'] if param[2]['value'] != '$CURRENT' else self.currentBlock
-                        if param[1]['value'] == 'add':
-                            if block == None:
-                                args['return_failed'] = True
-                                args['return_msg_key'] = DEFAULT + '还没有刷新过方块'
-                                return
-                            if block in self.blacklist:
-                                args['return_failed'] = True
-                                args['return_msg_key'] = DEFAULT + '该方块已在黑名单内'
-                                return
-                            if len(self.allBlocks) == 1:
-                                args['return_failed'] = True
-                                args['return_msg_key'] = DEFAULT + '这已经是可刷新方块的最后一个方块了'
-                                return
-                            self.blacklist.append(block)
-                            self.allBlocks.remove(block)
-                            args['return_msg_key'] = DEFAULT + '已将方块{}加入黑名单'.format(block)
-                        elif param[1]['value'] == 'list':
-                            # 这里修改args会比下面的晚发出
-                            # args['return_msg_key'] = DEFAULT + '黑名单列表如下:'
-                            args['return_msg_key'] = ''
-                            SendMessageToPlayer(pid, '当前存档的黑名单列表如下:')
-                            for b in self.blacklist:
-                                SendMessageToPlayer(pid, b)
-                            SendMessageToPlayer(pid, '====分割线====')
-                            SendMessageToPlayer(pid,
-                                                '你所查询的方块{}在黑名单内'.format(
-                                                    block) if block in self.blacklist else '你所查询的方块{}不在黑名单里'.format(
-                                                    block))
-                        elif param[1]['value'] == 'remove':
-                            if block not in self.blacklist:
-                                args['return_failed'] = True
-                                args['return_msg_key'] = DEFAULT + '该方块不在黑名单内'
-                                return
-                            self.blacklist.remove(block)
-                            self.allBlocks.append(block)
-                            args['return_msg_key'] = DEFAULT + '已删除{}'.format(block)
-                        elif param[1]['value'] == 'reset':
-                            self.allBlocks = BlockInfoComp.GetLoadBlocks()
-                            self.blacklist = []
-                            args['return_msg_key'] = DEFAULT + '已重置黑名单为空'
-                elif variant == 1:
-                    if param[0]['value'] == 'next':
-                        block = param[1]['value']
-                        if block in self.blacklist:
+            pid = origin['entityId']
+            if variant == 0:
+                if param[0]['value'] == 'blacklist':
+                    block = param[2]['value'] if param[2]['value'] != '$CURRENT' else self.currentBlock
+                    if param[1]['value'] == 'add':
+                        if not block:
                             args['return_failed'] = True
-                            args[
-                                'return_msg_key'] = DEFAULT + '不能将{}设置为下次刷新的方块 因为该方块在黑名单内'.format(
-                                block)
+                            args['return_msg_key'] = DEFAULT + '还没有刷新过方块'
                             return
-                        self.nextBlock = block
-                        args['return_msg_key'] = DEFAULT + '已将下次刷新的方块设为{}'.format(block)
-                elif variant == 2:
-                    if param[0]['value'] == 'land':
-                        if param[1]['value'] == 'bedrock':
-                            if param[2]['value'] == 'destroy':
-                                FillSkylandBottomBlocks('minecraft:air')
-                                args['return_msg_key'] = DEFAULT + '已将岛屿下的基岩摧毁'
-                            else:
-                                FillSkylandBottomBlocks('minecraft:bedrock')
-                                args['return_msg_key'] = DEFAULT + '成功放置岛屿下的基岩'
+                        result = self.AddBlockToBlacklist(block)
+                        if result == 1:
+                            args['return_failed'] = True
+                            args['return_msg_key'] = DEFAULT + '该方块已在黑名单内'
+                            return
+                        elif result == 2:
+                            args['return_failed'] = True
+                            args['return_msg_key'] = DEFAULT + '这已经是可刷新方块的最后一个方块了 因此添加失败'
+                            return
+                        elif result == 0:
+                            args['return_msg_key'] = DEFAULT + '已将方块{}加入黑名单'.format(block)
+                    elif param[1]['value'] == 'list':
+                        # 这里修改args会比下面的晚发出
+                        # args['return_msg_key'] = DEFAULT + '黑名单列表如下:'
+                        args['return_msg_key'] = ''
+                        consoleLibServerApi.SendMessageToPlayer(pid, '当前存档的黑名单列表如下:', DEFAULT)
+                        for b in self.blacklist:
+                            consoleLibServerApi.SendMessageToPlayer(pid, b, DEFAULT)
+                        consoleLibServerApi.SendMessageToPlayer(pid, '====分割线====', DEFAULT)
+                        consoleLibServerApi.SendMessageToPlayer(pid,
+                                                                '你所查询的方块{}在黑名单内'.format(
+                                                                    block) if block in self.blacklist else
+                                                                '你所查询的方块{}不在黑名单里'.format(block), DEFAULT)
+                    elif param[1]['value'] == 'remove':
+                        result = self.RemoveBlockFromBlacklist(block)
+                        if result == 1:
+                            args['return_failed'] = True
+                            args['return_msg_key'] = DEFAULT + '该方块不在黑名单内'
+                        elif result == 0:
+                            args['return_msg_key'] = DEFAULT + '已删除{}'.format(block)
+                    elif param[1]['value'] == 'reset':
+                        self.allBlocks = BlockInfoComp.GetLoadBlocks()
+                        self.blacklist = []
+                        args['return_msg_key'] = DEFAULT + '已重置黑名单为空'
+            elif variant == 1:
+                if param[0]['value'] == 'next':
+                    block = param[1]['value']
+                    if block in self.blacklist:
+                        args['return_failed'] = True
+                        args[
+                            'return_msg_key'] = DEFAULT + '不能将{}设置为下次刷新的方块 因为该方块在黑名单内'.format(
+                            block)
+                        return
+                    self.nextBlock = block
+                    args['return_msg_key'] = DEFAULT + '已将下次刷新的方块设为{}'.format(block)
+            elif variant == 2:
+                if param[0]['value'] == 'land':
+                    if param[1]['value'] == 'bedrock':
+                        if param[2]['value'] == 'destroy':
+                            FillSkylandBottomBlocks('minecraft:air')
+                            args['return_msg_key'] = DEFAULT + '已将岛屿下的基岩摧毁'
+                        else:
+                            FillSkylandBottomBlocks('minecraft:bedrock')
+                            args['return_msg_key'] = DEFAULT + '成功放置岛屿下的基岩'
+            elif variant == 3:
+                if param[0]['value'] == 'blacklist_fast_operate':
+                    if param[1]['value'] == 'fast_add':
+                        def FastAdd(keyword):
+                            elements = QueryElementByKeyword(self.allBlocks, keyword)
+                            if not elements:
+                                args['return_failed'] = True
+                                args['return_msg_key'] = DEFAULT + '查询不到含'+keyword+'的方块 请检查是否已经全部加入黑名单里'
+                                return
+                            for i in elements:
+                                result = self.AddBlockToBlacklist(i)
+                                if result == 1:
+                                    args['return_failed'] = True
+                                    args['return_msg_key'] = DEFAULT + '方块{}已经在黑名单内'.format(i)
+                                    return
+                                elif result == 2:
+                                    args['return_failed'] = True
+                                    args['return_msg_key'] = DEFAULT + '方块{}是可刷新方块的最后一个方块'.format(i)
+                                    return
+                                elif result == 0:
+                                    consoleLibServerApi.SendMessageToPlayer(pid, '方块{}添加成功'.format(i))
+                                    args['return_msg_key'] = ''
+                        if param[2]['value'] == 'cake':
+                            FastAdd('cake')
+                        elif param[2]['value'] == 'candle':
+                            FastAdd('candle')
+                        elif param[2]['value'] == 'slab':
+                            FastAdd('slab')
+                        elif param[2]['value'] == 'stairs':
+                            FastAdd('stairs')
+                        elif param[2]['value'] == 'door':
+                            FastAdd('door')
+                            consoleLibServerApi.SendMessageToPlayer(pid, '备注:包含活板门', DEFAULT)
+                        elif param[2]['value'] == 'flower':
+                            FastAdd('flower')
+                            consoleLibServerApi.SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
+                    elif param[1]['value'] == 'fast_remove':
+                        def FastRemove(keyword):
+                            elements = QueryElementByKeyword(self.blacklist, keyword)
+                            if not elements:
+                                args['return_failed'] = True
+                                args['return_msg_key'] = DEFAULT + '查询不到含'+keyword+'的方块 请检查是否全部不在黑名单里'
+                                return
+                            for i in elements:
+                                result = self.RemoveBlockFromBlacklist(i)
+                                if result == 1:
+                                    args['return_failed'] = True
+                                    args['return_msg_key'] = DEFAULT + '方块{}不在黑名单内'.format(i)
+                                    return
+                                elif result == 0:
+                                    consoleLibServerApi.SendMessageToPlayer(pid, '方块{}删除成功'.format(i))
+                                    args['return_msg_key'] = ''
+                        if param[2]['value'] == 'cake':
+                            FastRemove('cake')
+                        elif param[2]['value'] == 'candle':
+                            FastRemove('candle')
+                        elif param[2]['value'] == 'slab':
+                            FastRemove('slab')
+                        elif param[2]['value'] == 'stairs':
+                            FastRemove('stairs')
+                        elif param[2]['value'] == 'door':
+                            FastRemove('door')
+                            consoleLibServerApi.SendMessageToPlayer(pid, '备注:包含活板门', DEFAULT)
+                        elif param[2]['value'] == 'flower':
+                            FastRemove('flower')
+                            consoleLibServerApi.SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
+
 
     def Destroy(self):
         ExtraDataComp(LEVEL_ID).SetExtraData(KEY, {TIME_MAX: self.maxTime, 'remaining': self.remainingTime,
