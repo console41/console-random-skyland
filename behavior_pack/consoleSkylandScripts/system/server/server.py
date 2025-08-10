@@ -290,7 +290,7 @@ class Main(serverApi.GetServerSystemCls()):
 
 
     def Destroy(self):
-        ExtraDataComp(LEVEL_ID).SetExtraData(KEY, {TIME_MAX: self.maxTime, 'remaining': self.remainingTime,
+        ExtraDataComp(LEVEL_ID).SetExtraData(KEY, {TIME_MAX: self.maxTime, TIME_REMAINING: self.remainingTime,
                                                    BLACK_LIST: self.blacklist, NEXT_BLOCK: self.nextBlock,
                                                    CURRENT_BLOCK: self.currentBlock, HUB_POS: self.hubPos})
         GameComp.CancelTimer(self.timer)
