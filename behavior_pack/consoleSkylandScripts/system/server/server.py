@@ -7,7 +7,7 @@ from ...constant.serverConstant import *
 from ...function.commonFunctionUtils import *
 from ...function.serverFunctionUtils import FillSkylandBlocks, FillSkylandBottomBlocks
 from ...modMain import clientSystems
-from ...pack.serverUtils import consoleLibServerApi
+from ...pack.serverUtils import *
 
 __eventList = []
 
@@ -108,7 +108,7 @@ class Main(serverApi.GetServerSystemCls()):
             self.nextBlock = None
             self.currentBlock = block
             FillSkylandBlocks(block)
-            consoleLibServerApi.SendGlobalMessage('方块已刷新', DEFAULT)
+            SendGlobalMessage('方块已刷新', DEFAULT)
             RunCommand('/playsound random.levelup @a')
 
     @Listen('SetUpdateTime', MOD_NAME, clientSystems[0][1])
@@ -117,11 +117,11 @@ class Main(serverApi.GetServerSystemCls()):
         time = args['time']
         operation = PlayerComp(pid).GetPlayerOperation()
         if operation == 2:
-            consoleLibServerApi.SendMessageToPlayer(pid, '设置成功', DEFAULT)
+            SendMessageToPlayer(pid, '设置成功', DEFAULT)
             self.maxTime = time
             self.remainingTime = time
         else:
-            consoleLibServerApi.SendMessageToPlayer(pid, '设置失败 需要操作员权限', DEFAULT)
+            SendMessageToPlayer(pid, '设置失败 需要操作员权限', DEFAULT)
 
     @Listen
     def ChunkLoadedServerEvent(self, args):
@@ -143,7 +143,7 @@ class Main(serverApi.GetServerSystemCls()):
         variant = args['variant']
         param = args['args']
         if command == 'hub':
-            if consoleLibServerApi.IsRunByPlayer(args):
+            if IsRunByPlayer(args):
                 pid = origin['entityId']
                 pos = param[0]['value']
                 if pos == '$BACK':
@@ -182,11 +182,11 @@ class Main(serverApi.GetServerSystemCls()):
                         # 这里修改args会比下面的晚发出
                         # args['return_msg_key'] = DEFAULT + '黑名单列表如下:'
                         args['return_msg_key'] = ''
-                        consoleLibServerApi.SendMessageToPlayer(pid, '当前存档的黑名单列表如下:', DEFAULT)
+                        SendMessageToPlayer(pid, '当前存档的黑名单列表如下:', DEFAULT)
                         for b in self.blacklist:
-                            consoleLibServerApi.SendMessageToPlayer(pid, b, DEFAULT)
-                        consoleLibServerApi.SendMessageToPlayer(pid, '====分割线====', DEFAULT)
-                        consoleLibServerApi.SendMessageToPlayer(pid,
+                            SendMessageToPlayer(pid, b, DEFAULT)
+                        SendMessageToPlayer(pid, '====分割线====', DEFAULT)
+                        SendMessageToPlayer(pid,
                                                                 '你所查询的方块{}在黑名单内'.format(
                                                                     block) if block in self.blacklist else
                                                                 '你所查询的方块{}不在黑名单里'.format(block), DEFAULT)
@@ -241,7 +241,7 @@ class Main(serverApi.GetServerSystemCls()):
                                     args['return_msg_key'] = DEFAULT + '方块{}是可刷新方块的最后一个方块'.format(i)
                                     return
                                 elif result == 0:
-                                    consoleLibServerApi.SendMessageToPlayer(pid, '方块{}添加成功'.format(i))
+                                    SendMessageToPlayer(pid, '方块{}添加成功'.format(i))
                                     args['return_msg_key'] = ''
                         if param[2]['value'] == 'cake':
                             FastAdd('cake')
@@ -253,10 +253,10 @@ class Main(serverApi.GetServerSystemCls()):
                             FastAdd('stairs')
                         elif param[2]['value'] == 'door':
                             FastAdd('door')
-                            consoleLibServerApi.SendMessageToPlayer(pid, '备注:包含活板门', DEFAULT)
+                            SendMessageToPlayer(pid, '备注:包含活板门', DEFAULT)
                         elif param[2]['value'] == 'flower':
                             FastAdd('flower')
-                            consoleLibServerApi.SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
+                            SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
                     elif param[1]['value'] == 'fast_remove':
                         def FastRemove(keyword):
                             elements = QueryElementByKeyword(self.blacklist, keyword)
@@ -271,7 +271,7 @@ class Main(serverApi.GetServerSystemCls()):
                                     args['return_msg_key'] = DEFAULT + '方块{}不在黑名单内'.format(i)
                                     return
                                 elif result == 0:
-                                    consoleLibServerApi.SendMessageToPlayer(pid, '方块{}删除成功'.format(i))
+                                    SendMessageToPlayer(pid, '方块{}删除成功'.format(i))
                                     args['return_msg_key'] = ''
                         if param[2]['value'] == 'cake':
                             FastRemove('cake')
@@ -283,10 +283,10 @@ class Main(serverApi.GetServerSystemCls()):
                             FastRemove('stairs')
                         elif param[2]['value'] == 'door':
                             FastRemove('door')
-                            consoleLibServerApi.SendMessageToPlayer(pid, '备注:包含活板门', DEFAULT)
+                            SendMessageToPlayer(pid, '备注:包含活板门', DEFAULT)
                         elif param[2]['value'] == 'flower':
                             FastRemove('flower')
-                            consoleLibServerApi.SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
+                            SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
 
 
     def Destroy(self):
