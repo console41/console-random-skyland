@@ -129,7 +129,7 @@ class Main(serverApi.GetServerSystemCls()):
         dimension = args['dimension']
         chunkPosX = args['chunkPosX']
         chunkPosZ = args['chunkPosZ']
-        if dimension == 0:
+        if dimension == 0 and -1 <= chunkPosX <= 1 and -1 <= chunkPosZ <= 1:
             minX = chunkPosX * 16
             maxX = chunkPosX * 16 + 15
             minZ = chunkPosZ * 16
@@ -187,9 +187,9 @@ class Main(serverApi.GetServerSystemCls()):
                             SendMessageToPlayer(pid, b, DEFAULT)
                         SendMessageToPlayer(pid, '====分割线====', DEFAULT)
                         SendMessageToPlayer(pid,
-                                                                '你所查询的方块{}在黑名单内'.format(
-                                                                    block) if block in self.blacklist else
-                                                                '你所查询的方块{}不在黑名单里'.format(block), DEFAULT)
+                                            '你所查询的方块{}在黑名单内'.format(
+                                                block) if block in self.blacklist else
+                                            '你所查询的方块{}不在黑名单里'.format(block), DEFAULT)
                     elif param[1]['value'] == 'remove':
                         result = self.RemoveBlockFromBlacklist(block)
                         if result == 1:
@@ -228,7 +228,7 @@ class Main(serverApi.GetServerSystemCls()):
                             elements = QueryElementByKeyword(self.allBlocks, keyword)
                             if not elements:
                                 args['return_failed'] = True
-                                args['return_msg_key'] = DEFAULT + '查询不到含'+keyword+'的方块 请检查是否已经全部加入黑名单里'
+                                args['return_msg_key'] = DEFAULT + '查询不到含' + keyword + '的方块 请检查是否已经全部加入黑名单里'
                                 return
                             for i in elements:
                                 result = self.AddBlockToBlacklist(i)
@@ -243,6 +243,7 @@ class Main(serverApi.GetServerSystemCls()):
                                 elif result == 0:
                                     SendMessageToPlayer(pid, '方块{}添加成功'.format(i))
                                     args['return_msg_key'] = ''
+
                         if param[2]['value'] == 'cake':
                             FastAdd('cake')
                         elif param[2]['value'] == 'candle':
@@ -262,7 +263,7 @@ class Main(serverApi.GetServerSystemCls()):
                             elements = QueryElementByKeyword(self.blacklist, keyword)
                             if not elements:
                                 args['return_failed'] = True
-                                args['return_msg_key'] = DEFAULT + '查询不到含'+keyword+'的方块 请检查是否全部不在黑名单里'
+                                args['return_msg_key'] = DEFAULT + '查询不到含' + keyword + '的方块 请检查是否全部不在黑名单里'
                                 return
                             for i in elements:
                                 result = self.RemoveBlockFromBlacklist(i)
@@ -273,6 +274,7 @@ class Main(serverApi.GetServerSystemCls()):
                                 elif result == 0:
                                     SendMessageToPlayer(pid, '方块{}删除成功'.format(i))
                                     args['return_msg_key'] = ''
+
                         if param[2]['value'] == 'cake':
                             FastRemove('cake')
                         elif param[2]['value'] == 'candle':
@@ -287,7 +289,6 @@ class Main(serverApi.GetServerSystemCls()):
                         elif param[2]['value'] == 'flower':
                             FastRemove('flower')
                             SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
-
 
     def Destroy(self):
         ExtraDataComp(LEVEL_ID).SetExtraData(KEY, {TIME_MAX: self.maxTime, TIME_REMAINING: self.remainingTime,
