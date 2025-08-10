@@ -84,7 +84,8 @@
                 "stairs",
                 "slab",
                 "door",
-                "flower"
+                "flower",
+                "glass"
             ],
             "type": "enum_short"
         }

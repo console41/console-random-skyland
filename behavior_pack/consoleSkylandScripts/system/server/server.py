@@ -46,6 +46,9 @@ class Main(serverApi.GetServerSystemCls()):
             GameComp.SetSpawnDimensionAndPosition(0, self.hubPos)
             # 将重生半径设为0 防止刷到别的地方去
             GameComp.SetGameRulesInfoServer(GAME_RULE)
+            # 把没用的方块种类加到黑名单里
+            for blockType in ["cake", "candle", "stairs", "slab", "door", "flower", "glass"]:
+                RunCommand('/skyland_controller blacklist_fast_operate fast_add ' + blockType)
         # 不是第一次进入
         else:
             self.remainingTime = self.extraData[TIME_REMAINING]  # type: float
@@ -224,6 +227,7 @@ class Main(serverApi.GetServerSystemCls()):
             elif variant == 3:
                 if param[0]['value'] == 'blacklist_fast_operate':
                     if param[1]['value'] == 'fast_add':
+                        keyword = param[2]['value']
                         def FastAdd(keyword):
                             elements = QueryElementByKeyword(self.allBlocks, keyword)
                             if not elements:
@@ -244,21 +248,9 @@ class Main(serverApi.GetServerSystemCls()):
                                     SendMessageToPlayer(pid, '方块{}添加成功'.format(i))
                                     args['return_msg_key'] = ''
 
-                        if param[2]['value'] == 'cake':
-                            FastAdd('cake')
-                        elif param[2]['value'] == 'candle':
-                            FastAdd('candle')
-                        elif param[2]['value'] == 'slab':
-                            FastAdd('slab')
-                        elif param[2]['value'] == 'stairs':
-                            FastAdd('stairs')
-                        elif param[2]['value'] == 'door':
-                            FastAdd('door')
-                            SendMessageToPlayer(pid, '备注:包含活板门', DEFAULT)
-                        elif param[2]['value'] == 'flower':
-                            FastAdd('flower')
-                            SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
+                        FastAdd(keyword)
                     elif param[1]['value'] == 'fast_remove':
+                        keyword = param[2]['value']
                         def FastRemove(keyword):
                             elements = QueryElementByKeyword(self.blacklist, keyword)
                             if not elements:
@@ -275,20 +267,7 @@ class Main(serverApi.GetServerSystemCls()):
                                     SendMessageToPlayer(pid, '方块{}删除成功'.format(i))
                                     args['return_msg_key'] = ''
 
-                        if param[2]['value'] == 'cake':
-                            FastRemove('cake')
-                        elif param[2]['value'] == 'candle':
-                            FastRemove('candle')
-                        elif param[2]['value'] == 'slab':
-                            FastRemove('slab')
-                        elif param[2]['value'] == 'stairs':
-                            FastRemove('stairs')
-                        elif param[2]['value'] == 'door':
-                            FastRemove('door')
-                            SendMessageToPlayer(pid, '备注:包含活板门', DEFAULT)
-                        elif param[2]['value'] == 'flower':
-                            FastRemove('flower')
-                            SendMessageToPlayer(pid, '备注:包含花盆', DEFAULT)
+                        FastRemove(keyword)
 
     def Destroy(self):
         ExtraDataComp(LEVEL_ID).SetExtraData(KEY, {TIME_MAX: self.maxTime, TIME_REMAINING: self.remainingTime,
