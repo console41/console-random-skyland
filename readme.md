@@ -114,23 +114,19 @@
   
   快捷添加只会从可刷新方块中查找 不会处理已经添加过的方块 删除同理
 
-
-
 ## 更新内容
 
-版本号: 1.6(跨越1个版本)
+版本号: 1.7.0
 
-更新时间: 2025年7月13日 18:02:10
+更新时间: 2025年8月10日 21\:12:35
 
-- `/skyland_controller blacklist`新增`reset`
+- 代码重构(无实际影响)
 
-- 修复了没有刷新过方块仍能添加至黑名单的问题
+- 主世界群系以(0,0)为中心的9个区块设为平原 其余为海洋
 
-- 修复了最后一个可刷新方块可被加入黑名单的问题
+- 开局默认添加没用的方块到黑名单里 可以用`skyland_controller blacklist_fast_operate fast_remove`重新加回来
 
-- 修复了hub指令的问题
-
-- `skyland_controller`新增`blacklist_fast_operate`
+- `skyland_controller blacklist_fast_operate fast_add/fast_remove`新增`glass`种类
 
 ## 作者信息
 
