@@ -85,7 +85,15 @@
                 "slab",
                 "door",
                 "flower",
-                "glass"
+                "glass",
+                "concrete",
+                "banner",
+                "fence",
+                "carpet",
+                "terracotta",
+                "wall",
+                "rail",
+                "sign"
             ],
             "type": "enum_short"
         }
