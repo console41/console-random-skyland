@@ -95,7 +95,8 @@ __(下滑查看模组玩法和指令)__
   /skyland_controller blacklist <list|add|remove> [block: Block]
   
   /skyland_controller blacklist_fast_operate 
-      <fast_add|fast_remove> <cake|candle|stairs|slab|door|flower|glass>
+      <fast_add|fast_remove> <cake|candle|stairs|slab|door|flower|glass|concrete
+       |banner|fence|carpet|terracotta|wall|rail|sign>
   
   /skyland_controller land bedrock <set|destroy>
   
@@ -125,7 +126,7 @@ __(下滑查看模组玩法和指令)__
   - `blacklist_fast_operate`类型的参数说明
     
     | 语法                                              | 参数名  | 默认值 | 说明         |
-    | ----------------------------------------------- | ---- | --- | ---------- |
+    |-------------------------------------------------| ---- | --- | ---------- |
     | `fast_add` `fast_remove`                        | 类型   |     | 快速添加/减少    |
     | `cake` `candle` `stairs` `slab` `door` `flower` | 方块类型 |     | 要快速禁用的方块类型 |
 
@@ -135,17 +136,15 @@ __(下滑查看模组玩法和指令)__
 
 ## 更新内容
 
-版本号: 1.7.0
+版本号: 1.9.0
 
-更新时间: 2025年8月10日 21\:12:35
+更新时间: 2025年8月10日 22\:20:42
 
 - 代码重构(无实际影响)
 
-- 主世界群系以(0,0)为中心的9个区块设为平原 其余为海洋
+- 修复当玩家将其他模组的方块添加进黑名单 之后卸下模组导致报错的问题 修复当玩家没有打开作弊时首次进入无法添加没用的方块至黑名单的问题
 
-- 开局默认添加没用的方块到黑名单里 可以用`skyland_controller blacklist_fast_operate fast_remove`重新加回来
-
-- `skyland_controller blacklist_fast_operate fast_add/fast_remove`新增`glass`种类
+- `skyland_controller blacklist_fast_operate fast_add/fast_remove`新增`concrete banner fence carpet terracotta wall rail sign`种类
 
 ## 作者信息
 
