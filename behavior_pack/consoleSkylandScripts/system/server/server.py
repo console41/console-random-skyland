@@ -4,7 +4,6 @@ import random
 
 from ...config.configUtils import *
 from ...constant.serverConstant import *
-from ...function.commonFunctionUtils import *
 from ...function.serverFunctionUtils import FillSkylandBlocks, FillSkylandBottomBlocks
 from ...modMain import clientSystems
 from ...pack.serverUtils import *
@@ -47,8 +46,8 @@ class Main(serverApi.GetServerSystemCls()):
             # 将重生半径设为0 防止刷到别的地方去
             GameComp.SetGameRulesInfoServer(GAME_RULE)
             # 把没用的方块种类加到黑名单里
-            for blockType in ["cake", "candle", "stairs", "slab", "door", "flower", "glass"]:
-                RunCommand('/skyland_controller blacklist_fast_operate fast_add ' + blockType)
+            for keyword in ["cake", "candle", "stairs", "slab", "door", "flower", "glass"]:
+                self.AddBlockToBlacklistByBlockKeyword(keyword)
         # 不是第一次进入
         else:
             self.remainingTime = self.extraData[TIME_REMAINING]  # type: float
@@ -60,15 +59,42 @@ class Main(serverApi.GetServerSystemCls()):
             self.hubPos = self.extraData[HUB_POS]
             # 把黑名单里的方块从刷新列表中删除
             for x in self.blacklist:
-                self.allBlocks.remove(x)
+                try:
+                    self.allBlocks.remove(x)
+                except ValueError:
+                    logger.warn('block {} not found'.format(x))
 
         self.timer = GameComp.AddRepeatedTimer(1.0, self.RemoveTimer)
+
+    def AddBlockToBlacklistByBlockKeyword(self, keyword):
+        """
+        将id内含指定关键词的方块添加到黑名单内
+        :param keyword: 关键词
+        :return: 字典 key为方块id value为1则该方块已经在黑名单内 为2则此方块为可刷新方块的最后一个方块 为0则成功添加
+        """
+        blocks = [i for i in self.allBlocks if keyword in i]
+        result = {}
+        for block in blocks:
+            result[block] = self.AddBlockToBlacklist(block)
+        return result
+
+    def RemoveBlockToBlacklistByBlockKeyword(self, keyword):
+        """
+        将id内含指定关键词的方块从黑名单内删除
+        :param keyword: 关键词
+        :return: 字典 key为方块id value为1则该方块不在黑名单内 返回值为0则成功删除 若为空字典 则查询不到方块
+        """
+        blocks = [i for i in self.blacklist if keyword in i]
+        result = {}
+        for block in blocks:
+            result[block] = self.RemoveBlockFromBlacklist(block)
+        return result
 
     def AddBlockToBlacklist(self, blockId):
         """
         将方块添加到黑名单内
         :param blockId: 方块ID
-        :return: 返回值为1则该方块已经在黑名单内 返回值为2则此方块为可刷新方块的最后一个方块 返回值为0则成功添加
+        :return: 返回值为1则该方块已经在黑名单内 返回值为2则此方块为可刷新方块的最后一个方块 返回值为0则成功添加 若为空字典 则查询不到方块
         """
         if blockId in self.blacklist:
             return 1
@@ -228,46 +254,32 @@ class Main(serverApi.GetServerSystemCls()):
                 if param[0]['value'] == 'blacklist_fast_operate':
                     if param[1]['value'] == 'fast_add':
                         keyword = param[2]['value']
-                        def FastAdd(keyword):
-                            elements = QueryElementByKeyword(self.allBlocks, keyword)
-                            if not elements:
+                        result = self.AddBlockToBlacklistByBlockKeyword(keyword)
+                        if not result:
+                            args['return_failed'] = True
+                            args['return_msg_key'] = DEFAULT + '查询不到含' + keyword + '的方块 请检查是否已经全部加入黑名单里'
+                            return
+                        for blockId, returnValue in result.items():
+                            # 此处返回值不可能为1 所以直接跳过
+                            if returnValue == 2:
                                 args['return_failed'] = True
-                                args['return_msg_key'] = DEFAULT + '查询不到含' + keyword + '的方块 请检查是否已经全部加入黑名单里'
+                                args['return_msg_key'] = DEFAULT + '方块{}是可刷新方块的最后一个方块'.format(blockId)
                                 return
-                            for i in elements:
-                                result = self.AddBlockToBlacklist(i)
-                                if result == 1:
-                                    args['return_failed'] = True
-                                    args['return_msg_key'] = DEFAULT + '方块{}已经在黑名单内'.format(i)
-                                    return
-                                elif result == 2:
-                                    args['return_failed'] = True
-                                    args['return_msg_key'] = DEFAULT + '方块{}是可刷新方块的最后一个方块'.format(i)
-                                    return
-                                elif result == 0:
-                                    SendMessageToPlayer(pid, '方块{}添加成功'.format(i))
-                                    args['return_msg_key'] = ''
-
-                        FastAdd(keyword)
+                            elif returnValue == 0:
+                                SendMessageToPlayer(pid, '方块{}添加成功'.format(blockId), DEFAULT)
+                                args['return_msg_key'] = ''
                     elif param[1]['value'] == 'fast_remove':
                         keyword = param[2]['value']
-                        def FastRemove(keyword):
-                            elements = QueryElementByKeyword(self.blacklist, keyword)
-                            if not elements:
-                                args['return_failed'] = True
-                                args['return_msg_key'] = DEFAULT + '查询不到含' + keyword + '的方块 请检查是否全部不在黑名单里'
-                                return
-                            for i in elements:
-                                result = self.RemoveBlockFromBlacklist(i)
-                                if result == 1:
-                                    args['return_failed'] = True
-                                    args['return_msg_key'] = DEFAULT + '方块{}不在黑名单内'.format(i)
-                                    return
-                                elif result == 0:
-                                    SendMessageToPlayer(pid, '方块{}删除成功'.format(i))
-                                    args['return_msg_key'] = ''
-
-                        FastRemove(keyword)
+                        result = self.RemoveBlockToBlacklistByBlockKeyword(keyword)
+                        if not result:
+                            args['return_failed'] = True
+                            args['return_msg_key'] = DEFAULT + '查询不到含' + keyword + '的方块 请检查是否全部不在黑名单里'
+                            return
+                        for blockId, returnValue in result.items():
+                            # 同理 此处返回值也不可能为1
+                            if returnValue == 0:
+                                SendMessageToPlayer(pid, '方块{}删除成功'.format(blockId), DEFAULT)
+                                args['return_msg_key'] = ''
 
     def Destroy(self):
         ExtraDataComp(LEVEL_ID).SetExtraData(KEY, {TIME_MAX: self.maxTime, TIME_REMAINING: self.remainingTime,
