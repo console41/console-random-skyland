@@ -46,8 +46,9 @@ class Main(serverApi.GetServerSystemCls()):
             # 将重生半径设为0 防止刷到别的地方去
             GameComp.SetGameRulesInfoServer(GAME_RULE)
             # 把没用的方块种类加到黑名单里
-            for keyword in ['cake', 'candle', 'stairs', 'slab', 'door', 'flower', 'glass', 'concrete', 'banner', 'fence ',
-                            'carpet', 'terracotta', 'wall', 'rail', 'sign']:
+            for keyword in ['cake', 'candle', 'stairs', 'slab', 'door', 'flower', 'glass', 'concrete', 'banner', 'fence',
+                            'carpet', 'terracotta', 'wall', 'rail', 'sign', 'button', 'seed', 'coral',
+                            'pressure_plate']:
                 self.AddBlockToBlacklistByBlockKeyword(keyword)
         # 不是第一次进入
         else:
