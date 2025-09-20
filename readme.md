@@ -96,7 +96,7 @@ __(下滑查看模组玩法和指令)__
   
   /skyland_controller blacklist_fast_operate 
       <fast_add|fast_remove> <cake|candle|stairs|slab|door|flower|glass|concrete
-       |banner|fence|carpet|terracotta|wall|rail|sign>
+       |banner|fence|carpet|terracotta|wall|rail|sign|button|seed|coral|pressure_plate>
   
   /skyland_controller land bedrock <set|destroy>
   
@@ -136,15 +136,13 @@ __(下滑查看模组玩法和指令)__
 
 ## 更新内容
 
-版本号: 1.9.0
+版本号: 1.10.0
 
-更新时间: 2025年8月10日 22\:20:42
+更新时间: 2025年9月20日 22\:54:34
 
-- 代码重构(无实际影响)
+- 修复fence无法添加到黑名单的问题
 
-- 修复当玩家将其他模组的方块添加进黑名单 之后卸下模组导致报错的问题 修复当玩家没有打开作弊时首次进入无法添加没用的方块至黑名单的问题
-
-- `skyland_controller blacklist_fast_operate fast_add/fast_remove`新增`concrete banner fence carpet terracotta wall rail sign`种类
+- `skyland_controller blacklist_fast_operate fast_add/fast_remove`新增`button seed coral pressure_plate`种类
 
 ## 作者信息
 

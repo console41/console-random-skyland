@@ -93,7 +93,11 @@
                 "terracotta",
                 "wall",
                 "rail",
-                "sign"
+                "sign",
+                "button",
+                "seed",
+                "coral",
+                "pressure_plate"
             ],
             "type": "enum_short"
         }
