@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from mod.client.plugin.generalSetting.SettingInst import SettingInst
+# from mod.client.plugin.generalSetting.SettingInst import SettingInst
 
 from ...config.configUtils import *
 from ...constant.clientConstant import *

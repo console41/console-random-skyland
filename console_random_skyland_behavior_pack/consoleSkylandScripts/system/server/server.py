@@ -19,8 +19,18 @@ CreateEngineItemEntity = serverSystem.CreateEngineItemEntity
 CreateEngineEntityByTypeStr = serverSystem.CreateEngineEntityByTypeStr
 DestroyEntity = serverSystem.DestroyEntity
 
+# 先初始化变量
+
 extraData = ExtraDataComp(LEVEL_ID).GetExtraData(KEY)
 allBlocks = BlockInfoComp.GetLoadBlocks()
+
+currentBlock = None  # type: None | str
+remainingTime = 180
+maxTime = 180.0
+blacklist = []
+nextBlock = None  # type: None | str
+hubPos = SKYLAND
+timer = None
 
 
 def AddBlockToBlacklistByBlockKeyword(keyword):
@@ -257,13 +267,6 @@ def Destroy():
 # 判断是否是第一次进入
 # 是第一次进入
 if not extraData:
-    currentBlock = None  # type: None | str
-    remainingTime = 180
-    maxTime = 180.0
-    blacklist = []
-    nextBlock = None  # type: None | str
-    hubPos = SKYLAND
-    timer = None
     # 设置重生点 防止死亡后掉进虚空
     GameComp.SetSpawnDimensionAndPosition(0, hubPos)
     # 将重生半径设为0 防止刷到别的地方去
