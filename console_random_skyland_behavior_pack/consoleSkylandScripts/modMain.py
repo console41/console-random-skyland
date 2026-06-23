@@ -20,6 +20,7 @@ class Main(object):
         加载客户端模块 import该模块即可加载
         """
         from .system.client import client
+        from .system.client import configViewer
 
     @Mod.InitServer()
     def ServerInit(self):
