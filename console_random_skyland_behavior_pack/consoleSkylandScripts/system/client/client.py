@@ -1,45 +1,37 @@
 # -*- coding: utf-8 -*-
-
-from ...modMain import serverSystems
 from ...config.configUtils import *
 from ...constant.clientConstant import *
+from ...library.consoleMod.clientApi import Listen
+from ...library.consoleMod.config.configUtils import SERVER_SYSTEM_NAME, CLIENT_SYSTEM_NAME
 
-__eventList = []
+clientSystem = clientApi.GetSystem(MOD_NAME, CLIENT_SYSTEM_NAME)
+
+NotifyToServer = clientSystem.NotifyToServer
+CreateEngineSfx = clientSystem.CreateEngineSfx
+CreateEngineSfxFromEditor = clientSystem.CreateEngineSfxFromEditor
+CreateEngineParticle = clientSystem.CreateEngineParticle
+CreateEngineEffectBind = clientSystem.CreateEngineEffectBind
+DestroyEntity = clientSystem.DestroyEntity
+CreateClientEntityByTypeStr = clientSystem.CreateClientEntityByTypeStr
+DestroyClientEntity = clientSystem.DestroyClientEntity
+BroadcastEvent = clientSystem.BroadcastEvent
+
+uiNode = None  # type: None | clientApi.GetScreenNodeCls()
 
 
-def Listen(funcOrStr=None, namespace=clientApi.GetEngineNamespace(), systemName=clientApi.GetEngineSystemName(),
-           priority=0):
-    def wrapper(func):
-        __eventList.append(
-            (namespace, systemName, funcOrStr if isinstance(funcOrStr, str) else func.__name__, func, priority))
-        return func
-
-    return wrapper(funcOrStr) if callable(funcOrStr) else wrapper
+@Listen
+def UiInitFinished(_):
+    clientApi.RegisterUI(MOD_NAME, UI_NAME, CLS_PATH, SCREEN_PATH)
+    global uiNode
+    uiNode = clientApi.CreateUI(MOD_NAME, UI_NAME, CREATE_PARAM)
 
 
-def InitListen(instance):
-    for namespace, systemName, eventName, callback, priority in __eventList:
-        instance.ListenForEvent(namespace, systemName, eventName, instance, callback, priority)
-
-
-class Main(clientApi.GetClientSystemCls()):
-    def __init__(self, namespace, systemName):
-        super(Main, self).__init__(namespace, systemName)
-        InitListen(self)
-        self.uiNode = None
-
-    @Listen
-    def UiInitFinished(self, args):
-        clientApi.RegisterUI(MOD_NAME, UI_NAME, CLS_PATH, SCREEN_PATH)
-        self.uiNode = clientApi.CreateUI(MOD_NAME, UI_NAME, CREATE_PARAM)
-        self.uiNode.GetBaseUIControl(SETTING_UI).SetVisible(False)
-
-    @Listen('SetTime', MOD_NAME, serverSystems[0][1])
-    def SetTime(self, args):
-        # 防止ui未创建
-        if not self.uiNode:
-            return
-        textUIControl = self.uiNode.GetBaseUIControl(TEXT).asLabel()
-        textUIControl.SetText('距离方块刷新还有{}秒'.format(int(args['time'])))
-        self.uiNode.GetBaseUIControl(PROGRESS_BAR).asProgressBar().SetValue(
-            args['percentage'])
+@Listen(namespace=MOD_NAME, systemName=SERVER_SYSTEM_NAME)
+def SetTime(args):
+    # 防止ui未创建
+    if not uiNode:
+        return
+    text = uiNode.GetBaseUIControl(TEXT).asLabel()
+    text.SetText('距离方块刷新还有{}秒'.format(int(args['time'])))
+    uiNode.GetBaseUIControl(PROGRESS_BAR).asProgressBar().SetValue(
+        args['percentage'])

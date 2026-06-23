@@ -13,6 +13,6 @@ OperationComp = COMPONENT_FACTORY.CreateOperation(LEVEL_ID)
 EngineTypeComp = COMPONENT_FACTORY.CreateEngineType
 TextNotifyClientComp = COMPONENT_FACTORY.CreateTextNotifyClient(LEVEL_ID)
 PostProcessComp = COMPONENT_FACTORY.CreatePostProcess(LEVEL_ID)
-NeteaseWindowComp = COMPONENT_FACTORY.CreateNeteaseWindow(PLAYER_ID)
+ConfigClientComp = COMPONENT_FACTORY.CreateConfigClient(LEVEL_ID)
 
 ENUM = clientApi.GetMinecraftEnum()
